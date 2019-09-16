@@ -1,69 +1,40 @@
 const express = require('express');
+
+
+const PostController = require('../controllers/posts');
+
 const Post = require('../models/post');
+const checkAuth = require('../middleware/check-auth');
+const extractFile = require('../middleware/file');
 
 const router = express.Router();
 
-
-router.post('',(req, res, next) => {
-    // const post = req.body;
-    const post = new Post({
-      title: req.body.title,
-      content: req.body.content
-    });
-    post.save().then( createdPost => {
-      console.log(createdPost);
-      res.status(201).json({
-        message: 'Post added successfully',
-        postId: createdPost._id
-      });
-    });
-  });
+router.post(
+  '',
+  checkAuth, // WEEEE MY FIRST MIDDLEWARE !!!
+  extractFile, // WEEEE MY SECOND MIDDLEWARE !!!
+  PostController.createPost 
+  );
   
   // UPDATE
-  router.put('/:id', (req, res, next) => {
-    const post = new Post({
-      _id: req.body.id,
-      title: req.body.title,
-      content: req.body.content
-    });
-    Post.updateOne({_id: req.params.id}, post).then(result => {
-      console.log(result);
-      res.status(200).json({message: 'Update successful!!!'});
-    });
-  })
+  router.put('/:id', 
+  checkAuth, // WEEEE MY FIRST MIDDLEWARE !!! 
+  extractFile, // WEEEE MY SECOND MIDDLEWARE !!!
+  PostController.updatePost 
+  );
   
-  router.get('', (req, res, next) => {
-    // const posts = [
-    //   { id: '1234sdfg', title: 'First server Side Post',content: 'This is comming from the server'},
-    //   { id: '1234sdfg', title: 'Second server Side Post',content: 'This is comming from the server'},
-    //   { id: '1234sdfg', title: 'Third server Side Post',content: 'This is comming from the server'}
-    // ];
-    Post.find().then(documents => {
-      // console.log(documents);
-      res.status(200).json({
-        message: 'Posts fetched succesfully',
-        posts: documents
-      });
-    });
-  });
+  router.get('', 
+  PostController.getPosts
+   );
   
-  router.get('/:id', (req, res, next) => {
-    Post.findById(req.params.id).then(post => {
-      if(post){
-        res.status(200).json(post);
+  router.get('/:id', 
+  PostController.getPost
+  );
   
-      } else {
-        res.status(404).json({message: 'Post not found!'})
-      }
-    })
-  });
-  
-  router.delete('/:id', (req, res, next) => {
-    Post.deleteOne({_id: req.params.id}).then(result => {
-      console.log(result);
-      res.status(200).json({message: 'Post deleted!'})
-    })
-  });
+  router.delete('/:id', 
+  checkAuth, // WEEEE MY FIRST MIDDLEWARE !!!
+  PostController.deletePost
+  );
   
 
   module.exports = router;
